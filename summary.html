@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+
+    <nav class="navbar navbar-expand-lg bg-body-tertiary">
+        <div class="container-fluid">
+          <a class="navbar-brand" href="#">
+            <img src="{{ url_for('static', filename='logo.png') }}" alt="Delphinos Logo" height="50">
+            Delphinos</a>
+          <span class="navbar-text">
+            Admin
+          </span>
+          
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          
+          <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+            <div class="navbar-nav ms-auto text-end">
+              <a class="nav-link " aria-current="page" href="{{url_for('dashboard_admin')}}">Home</a>
+              <a class="nav-link active" href="{{ url_for('summary') }}">Summary</a>
+              <a class="nav-link" href="{{url_for('admin')}}">Logout</a>
+            </div>
+          </div>
+        </div>
+    </nav>
+
+
+    <div class="container mt-4">
+        <h1 class="mb-4">Summary</h1>
+
+ <!-- Top 5 highest Revenue generating Customer -->
+        <table class="table table-striped">
+            <h4>Top Customers</h4>
+            <h6>In terms of Revenue in Rupees</h6>
+            <thead>
+                <tr>
+                    <th>Username</th>
+                    <th>Total Purchases</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in summary_data[0] %}
+                <tr>
+                    <td>{{ user.username }}</td>
+                    <td>Rs. {{ user.total_purchases }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <div class="container mt-4">
+            <canvas id="revenueChart" width="400" height="200"></canvas>
+        </div>
+    </div>
+    <!-- Top 5 highest No. of Orders Customer -->
+    <div class="container mt-4">
+
+        <table class="table table-striped">
+            <h4>Top Customers</h4>
+            <h6>In terms of No. of Orders</h6>
+            <thead>
+                <tr>
+                    <th>Username</th>
+                    <th>Number of Orders</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in summary_data[1] %}
+                <tr>
+                    <td>{{ user.username }}</td>
+                    <td>{{ user.total_orders }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <div class="container mt-4">
+            <canvas id="ordersChart" width="400" height="200"></canvas>
+        </div>
+    </div>
+    <!-- Top 10 highest sold products -->
+    <div class="container mt-4">
+        <table class="table table-striped">
+            <h4>Highest Sold Product</h4>
+            <h6>In terms of Quantity</h6>
+            <thead>
+                <tr>
+                    <th>Product Name</th>
+                    <th>Quantity Sold</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for product in top_products_data %}
+                <tr>
+                    <td>{{ product.product }}</td>
+                    <td>{{ product.quantity_sold }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <div class="container mt-4">
+            <canvas id="productsChart" width="400" height="200"></canvas>
+        </div>
+    </div>
+    <!--Products which need Restocking -->
+    <div class="container mt-4">
+        <table class="table table-striped">
+            <h4>Products Which Need Restocking </h4>
+            <h6>Quantity less then 5 </h6>
+            <thead>
+                <tr>
+                    <th>Product Name</th>
+                    <th>Available Quantity</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for product in low_quantity_products_data %}
+                <tr>
+                    <td>{{ product.product }}</td>
+                    <td>{{ product.available_quantity }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+        </table>
+        <div class="container mt-4">
+            <canvas id="productsChart" width="400" height="200"></canvas>
+        </div>
+    </div>
+
+
+
+
+
+
+
+
+    <!-- Add JavaScript code to render charts -->
+    <script>
+        // Function to render bar chart for top customers based on revenue
+        function renderRevenueChart() {
+            var ctx = document.getElementById('revenueChart').getContext('2d');
+            var labels = [];
+            var data = [];
+
+            {% for user in summary_data[0] %}
+                labels.push("{{ user.username }}");
+                data.push({{ user.total_purchases }});
+            {% endfor %}
+
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Total Purchases (Rupees)',
+                        data: data,
+                        backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        // Function to render bar chart for top customers based on number of orders
+        function renderOrdersChart() {
+            var ctx = document.getElementById('ordersChart').getContext('2d');
+            var labels = [];
+            var data = [];
+
+            {% for user in summary_data[1] %}
+                labels.push("{{ user.username }}");
+                data.push({{ user.total_orders }});
+            {% endfor %}
+
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Total Orders',
+                        data: data,
+                        backgroundColor: 'rgba(75, 192, 192, 0.5)',
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        // Function to render bar chart for top customers based on number of orders
+        function renderProductsChart() {
+            var ctx = document.getElementById('productsChart').getContext('2d');
+            var labels = [];
+            var data = [];
+
+            {% for product in top_products_data %}
+                labels.push("{{ product.product }}");
+                data.push({{ product.quantity_sold }});
+            {% endfor %}
+
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Total Orders',
+                        data: data,
+                        backgroundColor: 'rgba(75, 192, 192, 0.5)',
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+        // Call the chart rendering functions when the page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            renderRevenueChart();
+            renderOrdersChart();
+            renderProductsChart();
+        });
+    </script>
+
+
+
+
+
+
+ <!-- SCRIPTS -->
+ <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0"></script>
+ <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>
+
